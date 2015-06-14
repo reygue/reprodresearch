@@ -1,20 +1,15 @@
 ---
-title: "ActivityMonitorData3"
+title: "ActivityMonitorData"
 author: "Reynold Guerrier"
 date: "Sunday, June 14, 2015"
 output: html_document
 ---
----
-title: "ActivityMonitorData2"
-author: "Reynold Guerrier"
-date: "Sunday, June 14, 2015"
-output: html_document
----
+
 #Peer Assessment 1
 =====================================================================================================================
 This assignment makes use of data from a personnal activity monitoring device. The devices collects data at 5 minutes interval through out the day. The data consists of two months of data of an anonymous individual collected during the months of October & November 2012 and include a number of steps taken in 5 minute intervals eah day
 
-##Data Processing
+###Data Processing
 The dataset: Activity Monitoring Data used for this assignment has been downloaded (https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)
 
 1. Download the Activity file in the current working directory
@@ -31,21 +26,24 @@ ggplot(PerDay, aes(x = steps)) + geom_histogram(binwidth =1500, colour = "black"
 ```
 
 
+
+
 The number of steps taken per Day are:
 
-* Mean: 10766.19
+* Mean:   10766.19
 * Median: 10765
 
-## What is the average daily activity pattern
+### What is the average daily activity pattern
+
 
 ```{r, echo=TRUE}
 perInterval <- aggregate(steps ~ interval, mondata, mean, na.rm = TRUE)
 ggplot(perInterval, aes(x = interval, y = steps)) + geom_line() + labs(title = "Average of steps taken daily", x = "Interval", y = "Number of Steps")
 ```
 
-## Imputing missing values
 
 
+### Imputing missing values
 
 ```{r, echo=TRUE}
 mondata.impute <- adply(mondata, 1, function(x) if (is.na(x$steps)) {x$steps = round(perInterval[perInterval$interval == x$interval,2]) 
@@ -69,12 +67,11 @@ ggplot(perDay.impute, aes(x = steps)) + geom_histogram(binwidth = 1500, colour =
 
 We observe that he mean value and the median value have shifted a little
 
-* Mean: 10765.64
-* Median: 10762
+* Mean:     10765.64
+* Median:   10762
 
 Below we have the 2 histograms
 
-## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r, echo=TRUE}
 perDay.all <- rbind(PerDay, perDay.impute)
@@ -113,4 +110,3 @@ ggplot(mondata.week, aes(x = interval, y = steps)) + geom_line() + facet_grid(da
 
 
 ```
-
