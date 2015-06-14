@@ -1,0 +1,108 @@
+---
+title: "ActivityMonitorData3"
+author: "Reynold Guerrier"
+date: "Sunday, June 14, 2015"
+output: html_document
+---
+---
+title: "ActivityMonitorData2"
+author: "Reynold Guerrier"
+date: "Sunday, June 14, 2015"
+output: html_document
+---
+#Peer Assessment 1
+=====================================================================================================================
+This assignment makes use of data from a personnal activity monitoring device. The devices collects data at 5 minutes interval through out the day. The data consists of two months of data of an anonymous individual collected during the months of October & November 2012 and include a number of steps taken in 5 minute intervals eah day
+
+##Data Processing
+The dataset: Activity Monitoring Data used for this assignment has been downloaded at the following location
+1. Download the Activity file in the current working directory
+2. Uncompress it and convert it as a dataframe 
+3. Define the class of each column 
+```{r, echo=TRUE}
+library(ggplot2)
+library(plyr)
+setwd("c:\\data\\perso\\cours-online\\coursera\\reprodresearch\\data")
+mondata <- read.csv("activity.csv", colClasses = c("numeric", "Date","numeric"))
+PerDay <- aggregate(steps ~ date, mondata, sum, na.action = na.pass)
+PerDay <- cbind(PerDay, label = rep("with.na", nrow(PerDay)))
+ggplot(PerDay, aes(x = steps)) + geom_histogram(binwidth =1500, colour = "black", fill = "green") + labs(title = "Number of mean steps taken daily", x = "Number of steps", y = "Frequency")
+```
+
+## What is the average daily activity pattern
+
+```{r, echo=TRUE}
+perInterval <- aggregate(steps ~ interval, mondata, mean, na.rm = TRUE)
+ggplot(perInterval, aes(x = interval, y = steps)) + geom_line() + labs(title = "Average of steps taken daily", x = "Interval", y = "Number of Steps")
+```
+
+## Imputing missing values
+
+
+
+```{r, echo=TRUE}
+mondata.impute <- adply(mondata, 1, function(x) if (is.na(x$steps)) {x$steps = round(perInterval[perInterval$interval == x$interval,2]) 
+                                                                     x}
+                        else {
+                          x
+                        })
+
+```
+
+We will obtain the following histogram
+
+```{r, echo=TRUE}
+# We add label for tracking purpose
+perDay.impute <- aggregate(steps ~ date, mondata.impute, sum)
+perDay.impute <- cbind(perDay.impute, label = rep("without.na", nrow(perDay.impute)))
+ggplot(perDay.impute, aes(x = steps)) + geom_histogram(binwidth = 1500, colour = "black", fill = "green") + labs(title = "Steps taken per Day", x = "Number of Steps", y = "Frequency") + theme(legend.position = "bottom")
+
+
+```
+
+We observe that he mean value and the median value have shifted a little
+
+* Mean: 10765.64
+* Median: 10762
+
+Below we have the 2 histograms
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+```{r, echo=TRUE}
+perDay.all <- rbind(PerDay, perDay.impute)
+levels(perDay.all$label) <- c("With NA", "Without NA")
+ggplot(perDay.all, aes(x = steps, fill = label)) + geom_histogram(binwith = 1500, colour = "black", alpha = 0.2) + labs(title = "Steps taken per Day", x = "Number of Steps", y = "Frequency") + theme(legend.position = "bottom")
+
+```
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+To do this comparison with the table with filled-in missing values, we follow the next steps:
+
+ 1. Subset the data into two parts - weekends (Saturday and Sunday) and weekdays (Monday through Friday)
+2. Obtain the average steps per interval for each dataset.
+3. And plot the two datasets for comparison.
+
+```{r, echo=FALSE}
+#Set the system to the local time
+Sys.setlocale(locale = "C")
+
+```
+
+```{r, echo=TRUE}
+mondata.weekend <- subset(mondata.impute, weekdays(date) %in% c("Saturday", "Sunday"))
+mondata.weekday <- subset(mondata.impute, !weekdays(date) %in% c("Saturday", "Sunday"))
+mondata.weekend <- aggregate(steps ~ interval, mondata.weekend, mean)
+mondata.weekday <- aggregate(steps ~ interval, mondata.weekday, mean)
+mondata.weekend <- cbind(mondata.weekend, day = rep("weekend"))
+mondata.weekday <- cbind(mondata.weekday, day = rep("weekday"))
+# Combine the 2 subsets 
+mondata.week <- rbind(mondata.weekend, mondata.weekday)
+levels(mondata.week$day) <- c("Weekend", "Weekday")
+ggplot(mondata.week, aes(x = interval, y = steps)) + geom_line() + facet_grid(day ~ 
+    .) + labs(x = "Interval", y = "Number of steps")
+
+
+```
+
